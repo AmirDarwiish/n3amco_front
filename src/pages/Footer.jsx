@@ -180,7 +180,7 @@ export default function Footer({ settings = {}, scrollTo }) {
       letterSpacing: '1px'
     }}
   >
-    ZEIIA
+    Z E I I A
   </a>
 </div>
     </footer>
