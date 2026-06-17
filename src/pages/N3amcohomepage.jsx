@@ -3,7 +3,7 @@ import Navbar, { NavSpacer } from './Navbar'
 import Footer from './Footer'
 import './styles.css'
 
-const API_BASE_URL = 'https://localhost:7068'
+const API_BASE_URL = 'https://n3amco.runasp.net'
 
 /* ── API Helpers ── */
 async function fetchHomeData() {
