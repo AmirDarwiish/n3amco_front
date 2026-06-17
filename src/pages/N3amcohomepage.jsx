@@ -58,7 +58,7 @@ async function submitWaitlist(data) {
 
 /* ── Fallback Mock Data ── */
 const MOCK_SETTINGS = {
-  siteName: 'تاج النعام',
+  siteName: 'نعامكو',
   siteTagline: 'PREMIUM OSTRICH',
   heroTitle: 'احجز لحم النعام',
   heroTitleHighlight: 'قبل موعد الذبح',
@@ -693,7 +693,7 @@ const normalizeProduct = (p) => ({
   const heroSubtitle       = settings?.heroSubtitle       || 'مش بيعات عادية — بتحجز كيلوجراماتك قبل ما نذبح، وتستلم اللحم طازج على طول من غير أي تخزين أو وسطاء.'
   const heroPrimaryBtn     = settings?.heroPrimaryBtnText  || 'احجز دلوقتي'
   const heroSecondaryBtn   = settings?.heroSecondaryBtnText || 'شوف المنتجات'
-  const siteName           = settings?.siteName            || 'تاج النعام'
+  const siteName           = settings?.siteName            || 'نعامكو'
 
   return (
     <div style={{ fontFamily: "'Cairo', sans-serif", direction: 'rtl', background: '#fafaf7', color: '#1c1917' }}>
@@ -930,7 +930,7 @@ const normalizeProduct = (p) => ({
         </div>
       </section>
 
-      {/* ════ WHY تاج النعام ════ */}
+      {/* ════ WHY نعامكو ════ */}
       <section style={{ padding: '88px 24px', background: '#fafaf7' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div className="split-two" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 60, alignItems: 'center' }}>
