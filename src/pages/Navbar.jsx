@@ -82,7 +82,7 @@ export function NavSpacer({ navRef }) {
 export default function Navbar({ settings = {}, banners = [], navRef, onTrackClick, scrollTo }) {
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const siteName    = settings?.siteName    || 'N3AMCO'
+  const siteName    = settings?.siteName    || 'نعامكو'
   const siteTagline = settings?.siteTagline || 'PREMIUM OSTRICH'
   const waNumber    = settings?.whatsAppNumber?.replace(/\D/g, '')
   const waLink      = waNumber ? `https://wa.me/${waNumber}` : null
@@ -118,9 +118,39 @@ export default function Navbar({ settings = {}, banners = [], navRef, onTrackCli
         className="nav-inner-pad"
       >
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
           {settings?.logoUrl ? (
-            <img src={settings.logoUrl} alt={siteName} style={{ height: 36, width: 'auto' }} />
+            <>
+              <img
+                src={settings.logoUrl}
+                alt={siteName}
+                style={{
+                  height: 42,
+                  maxHeight: 42,
+                  width: 'auto',
+                  maxWidth: 110,
+                  objectFit: 'contain',
+                  flexShrink: 0,
+                }}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 19,
+                    fontWeight: 900,
+                    color: '#1c1917',
+                    letterSpacing: 0.5,
+                    fontFamily: "'Cairo', sans-serif",
+                    lineHeight: 1.15,
+                    whiteSpace: 'nowrap',
+                  }}
+                >{siteName}</div>
+                <div
+                  className="hide-mob"
+                  style={{ fontSize: 8, color: '#a8a29e', fontWeight: 700, letterSpacing: 2.5, marginTop: 1, whiteSpace: 'nowrap' }}
+                >{siteTagline}</div>
+              </div>
+            </>
           ) : (
             <>
               <div style={{
@@ -128,9 +158,9 @@ export default function Navbar({ settings = {}, banners = [], navRef, onTrackCli
                 background: 'linear-gradient(135deg, #c8913f, #B8843A)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontWeight: 900, fontSize: 15, color: '#fff', flexShrink: 0,
-              }}>N</div>
+              }}>ن</div>
               <div>
-                <div style={{ fontSize: 16, fontWeight: 900, color: '#1c1917', letterSpacing: 1.5 }}>{siteName}</div>
+                <div style={{ fontSize: 16, fontWeight: 900, color: '#1c1917', letterSpacing: 1.5, fontFamily: "'Cairo', sans-serif" }}>{siteName}</div>
                 <div style={{ fontSize: 8, color: '#a8a29e', fontWeight: 700, letterSpacing: 2.5, marginTop: -1 }}>{siteTagline}</div>
               </div>
             </>
