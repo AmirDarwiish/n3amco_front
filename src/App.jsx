@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 import { LangProvider } from './context/LangContext'
 import { ThemeProvider } from './context/ThemeContext'
 import ScrollToTop from './components/ScrollToTop'
+import N3amcoHomePage from './pages/N3amcohomepage'
+
 
 // ── Dashboard Pages — lazy
 const DashboardLogin      = lazy(() => import('./pages/dashboard/login'))
@@ -21,7 +23,6 @@ const UnitsPage       = lazy(() => import('./pages/dashboard/Unitspage'))
 // إضافة صفحة النظام المالي
 const AccountingModule    = lazy(() => import('./pages/dashboard/AccountingModule'))
 
-import './styles/dashboard.css'
 
 /* ── isLoggedIn ────────────────────────────────────────────── */
 const isLoggedIn = () => !!localStorage.getItem('token')
@@ -34,7 +35,7 @@ function PrivateRoute({ children }) {
 
 /* ── Dashboard Loader ──────────────────────────────────────── */
 const DashboardLoader = () => (
-  <div style={{
+  <div style={{ 
     minHeight: '100vh', background: '#080d16',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   }}>
@@ -94,7 +95,7 @@ const App = () => (
         <ScrollToTop />
         <Routes>
           {/* Redirect root to dashboard */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+<Route path="/" element={<N3amcoHomePage />} />
 
           {/* Login & session */}
           <Route path="/dashboard/login"
