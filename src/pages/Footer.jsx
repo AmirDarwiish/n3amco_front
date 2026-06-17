@@ -150,6 +150,39 @@ export default function Footer({ settings = {}, scrollTo }) {
           </div>
         </div>
       </div>
+      <div
+  style={{
+    textAlign: 'center',
+    marginTop: 18,
+    paddingTop: 18,
+    borderTop: '1px solid rgba(255,255,255,0.06)'
+  }}
+>
+  <span
+    style={{
+      fontSize: 13,
+      color: '#78716c',
+      fontWeight: 500
+    }}
+  >
+    Made with ❤️ by{' '}
+  </span>
+
+  <a
+    href="https://zeiia.com"
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{
+      color: '#B8843A',
+      textDecoration: 'none',
+      fontSize: 15,
+      fontWeight: 800,
+      letterSpacing: '1px'
+    }}
+  >
+    ZEIIA
+  </a>
+</div>
     </footer>
   )
 }
