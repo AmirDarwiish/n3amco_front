@@ -139,8 +139,14 @@ function HeroSlider({ sliders }) {
       {sliders.map((s, i) => (
         <div key={s.id} style={{
           position: 'absolute', inset: 0,
-          backgroundImage: s.imageUrl ? `url(${s.imageUrl})` : 'none',
-          backgroundSize: 'cover', backgroundPosition: 'center',
+          backgroundImage: `url(${
+  window.innerWidth <= 768
+    ? (s.mobileImageUrl || s.imageUrl)
+    : s.imageUrl
+})`,
+          backgroundSize: 'cover',
+backgroundPosition: 'center center',
+backgroundRepeat: 'no-repeat',
           opacity: i === current ? 1 : 0,
           transition: 'opacity 1.2s ease',
         }} />
