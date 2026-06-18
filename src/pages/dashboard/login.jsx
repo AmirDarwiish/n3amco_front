@@ -28,8 +28,16 @@ const [password, setPassword] = useState('123123123')
       })
       const json = await res.json()
       if (!res.ok) { setError('إيميل أو باسورد غلط'); setLoading(false); return }
-      const token = json?.data?.token ?? json?.token
-      localStorage.setItem('token', token)
+
+      const data  = json?.data ?? json
+      const token = data?.token
+
+      localStorage.setItem('token',       token)
+      localStorage.setItem('user-name',   data?.fullName ?? '')
+      localStorage.setItem('user-email',  data?.email    ?? '')
+      localStorage.setItem('permissions', JSON.stringify(data?.permissions ?? []))
+      localStorage.setItem('roles',       JSON.stringify(data?.roles       ?? []))
+
       navigate('/dashboard')
     } catch {
       setError('فشل الاتصال بالسيرفر')

@@ -11,6 +11,22 @@ const authHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem('token')}`,
 })
 
+/* ── Permissions helper ──────────────────────────────────── */
+function usePermissions() {
+  const raw   = localStorage.getItem('permissions')
+  const roles = JSON.parse(localStorage.getItem('roles') || '[]')
+  const permissions = raw ? JSON.parse(raw) : []
+  const isSuperAdmin = roles.includes('SuperAdmin')
+
+  const can = (permission) => {
+    if (!permission)    return true   // بدون قيد → يظهر للكل
+    if (isSuperAdmin)   return true   // SuperAdmin يشوف كل حاجة
+    return permissions.includes(permission)
+  }
+
+  return { can, isSuperAdmin, permissions }
+}
+
 /* ── SVG Icons ───────────────────────────────────────────── */
 const Ico = ({ children, size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
@@ -41,43 +57,43 @@ const NAV = [
   {
     section: 'الرئيسية',
     items: [
-      { path: '/dashboard', label: 'لوحة التحكم', Icon: IcoDashboard },
+      { path: '/dashboard', label: 'لوحة التحكم', Icon: IcoDashboard, permission: 'DASHBOARD_VIEW' },
     ],
   },
   {
     section: 'الموردون والخامات',
     items: [
-      { path: '/dashboard/milk-collections',  label: ' سجل التوريدات',    Icon: IcoMilk },
-      { path: '/dashboard/suppliers',          label: 'الموردون',          Icon: IcoSuppliers },
-      { path: '/dashboard/supplier-payments',  label: 'مدفوعات الموردين', Icon: IcoPayments  },
+      { path: '/dashboard/milk-collections', label: 'سجل التوريدات',    Icon: IcoMilk,      permission: 'SUPPLIERS_VIEW'        },
+      { path: '/dashboard/suppliers',         label: 'الموردون',          Icon: IcoSuppliers, permission: 'SUPPLIERS_VIEW'        },
+      { path: '/dashboard/supplier-payments', label: 'مدفوعات الموردين', Icon: IcoPayments,  permission: 'SUPPLIER_PAYMENT_VIEW' },
     ],
   },
   {
     section: 'المبيعات',
     items: [
-      { path: '/dashboard/sales/new', label: 'فاتورة جديدة', Icon: IcoNewSale }, 
-      { path: '/dashboard/sales',     label: 'قائمة المبيعات', Icon: IcoSaleList }, 
-      { path: '/dashboard/customers', label: 'العملاء', Icon: IcoUsers },
+      { path: '/dashboard/sales/new', label: 'فاتورة جديدة',   Icon: IcoNewSale,  permission: 'SALES_CREATE' },
+      { path: '/dashboard/sales',     label: 'قائمة المبيعات', Icon: IcoSaleList, permission: 'SALES_READ'   },
+      { path: '/dashboard/customers', label: 'العملاء',         Icon: IcoUsers,    permission: 'CUSTOMERS_VIEW' },
     ],
   },
   {
     section: 'المخزن والمستودع',
     items: [
-      { path: '/dashboard/products', label: 'المنتجات والمخزون', Icon: IcoInventory },
-      { path: '/dashboard/Units', label: 'الوحدات', Icon: IcoInventory },      
+      { path: '/dashboard/products', label: 'المنتجات والمخزون', Icon: IcoInventory, permission: 'PRODUCTS_VIEW' },
+      { path: '/dashboard/Units',    label: 'الوحدات',            Icon: IcoInventory, permission: 'UNITS_VIEW'    },
     ],
   },
   {
     section: 'المالية والحسابات',
     items: [
-      { path: '/dashboard/accounting', label: 'النظام المالي', Icon: IcoAccounting },
+      { path: '/dashboard/accounting', label: 'النظام المالي', Icon: IcoAccounting, permission: 'ACCOUNTS_VIEW' },
     ],
   },
   {
     section: 'الإدارة',
     items: [
-      { path: '/dashboard/users',              label: 'المستخدمون',        Icon: IcoUsers   },
-      { path: '/dashboard/reports/activity',   label: 'تقارير النشاط',    Icon: IcoReport  },
+      { path: '/dashboard/users',            label: 'المستخدمون',    Icon: IcoUsers,  permission: 'USERS_VIEW' },
+      { path: '/dashboard/reports/activity', label: 'تقارير النشاط', Icon: IcoReport, permission: null         },
     ],
   },
 ]
@@ -105,6 +121,8 @@ function ProfileDropdown({ onClose }) {
     localStorage.removeItem('token')
     localStorage.removeItem('user-name')
     localStorage.removeItem('user-email')
+    localStorage.removeItem('permissions')
+    localStorage.removeItem('roles')
     navigate('/dashboard/login')
   }
 
@@ -169,51 +187,46 @@ function NavItem({ item, collapsed, badge }) {
 /* ═══════════════════════════════════════════════════════════
    DASHBOARD LAYOUT — Main Export
 ═══════════════════════════════════════════════════════════ */
-export default function DashboardLayout({
-  children, title, breadcrumb, headerActions,
-})
- {
+export default function DashboardLayout({ children, title, breadcrumb, headerActions }) {
   const { toggleTheme, isDark } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
+  const { can } = usePermissions()
 
   const [collapsed,   setCollapsed]   = useState(() => window.innerWidth < 1200)
   const [mobileOpen,  setMobileOpen]  = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [todayBadge,  setTodayBadge]  = useState(0)
+  const [isMobile,    setIsMobile]    = useState(() => window.innerWidth <= 768)
 
   useEffect(() => { setMobileOpen(false) }, [location.pathname])
 
   useEffect(() => {
-    const fn = () => { if (window.innerWidth < 1200) setCollapsed(true) }
+    const fn = () => {
+      if (window.innerWidth < 1200) setCollapsed(true)
+      setIsMobile(window.innerWidth <= 768)
+    }
     window.addEventListener('resize', fn)
     return () => window.removeEventListener('resize', fn)
   }, [])
 
- 
-const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768)
-
-useEffect(() => {
-  const fn = () => setIsMobile(window.innerWidth <= 768)
-  window.addEventListener('resize', fn)
-  return () => window.removeEventListener('resize', fn)
-}, [])
   return (
     <div className="db-shell" style={{ direction: 'rtl' }}>
 
       {/* ── Sidebar Overlay (mobile) ────────────────────── */}
-<div
-  className={`db-sidebar-overlay${mobileOpen ? ' db-sidebar-overlay--visible' : ''}`}
-  onClick={() => setMobileOpen(false)}
-/>
+      <div
+        className={`db-sidebar-overlay${mobileOpen ? ' db-sidebar-overlay--visible' : ''}`}
+        onClick={() => setMobileOpen(false)}
+      />
+
       {/* ══════════════════════════════════════════════════
          SIDEBAR
       ══════════════════════════════════════════════════ */}
-<aside className={[
-  'db-sidebar',
-  collapsed && !isMobile ? 'db-sidebar--collapsed' : '',
-  mobileOpen ? 'db-sidebar--open' : '',
-].filter(Boolean).join(' ')}>
+      <aside className={[
+        'db-sidebar',
+        collapsed && !isMobile ? 'db-sidebar--collapsed' : '',
+        mobileOpen ? 'db-sidebar--open' : '',
+      ].filter(Boolean).join(' ')}>
 
         {/* ── Logo ────────────────────────────────────── */}
         <div className="db-sidebar__logo">
@@ -221,29 +234,20 @@ useEffect(() => {
             width: 32, height: 32, borderRadius: 8, flexShrink: 0,
             background: 'linear-gradient(135deg, var(--gold-light), var(--gold))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 900, fontSize: 14,
-            color: '#080d16',
+            fontWeight: 900, fontSize: 14, color: '#080d16',
           }}>Z</div>
 
           <div className="db-sidebar__logo-text" style={{ lineHeight: 1 }}>
             <span style={{
-              display: 'block',
-              fontSize: 15,
-              fontWeight: 900,
-              color: 'var(--gold)',
-              letterSpacing: 1,
-              whiteSpace: 'nowrap',
+              display: 'block', fontSize: 15, fontWeight: 900,
+              color: 'var(--gold)', letterSpacing: 1, whiteSpace: 'nowrap',
             }}>
               ZEIIA ERP
             </span>
             <span style={{
-              display: 'block',
-              fontSize: 9,
-              fontWeight: 600,
+              display: 'block', fontSize: 9, fontWeight: 600,
               color: 'var(--sidebar-text-muted, rgba(255,255,255,.4))',
-              letterSpacing: 1.5,
-              whiteSpace: 'nowrap',
-              marginTop: 1,
+              letterSpacing: 1.5, whiteSpace: 'nowrap', marginTop: 1,
             }}>
               نظام إدارة المصنع
             </span>
@@ -252,19 +256,27 @@ useEffect(() => {
 
         {/* ── Nav ─────────────────────────────────────── */}
         <nav className="db-nav">
-          {NAV.map(section => (
-            <div key={section.section} className="db-nav-section">
-              <div className="db-nav-label">{section.section}</div>
-              {section.items.map(item => (
-                <NavItem
-                  key={item.path}
-                  item={item}
-                  collapsed={collapsed && !mobileOpen}
-                  badge={item.path === '/dashboard' ? todayBadge : 0}
-                />
-              ))}
-            </div>
-          ))}
+          {NAV.map(section => {
+            // فلتر الـ items بناءً على permissions اليوزر
+            const visibleItems = section.items.filter(item => can(item.permission))
+
+            // لو مفيش items → متظهرش الـ section خالص
+            if (visibleItems.length === 0) return null
+
+            return (
+              <div key={section.section} className="db-nav-section">
+                <div className="db-nav-label">{section.section}</div>
+                {visibleItems.map(item => (
+                  <NavItem
+                    key={item.path}
+                    item={item}
+                    collapsed={collapsed && !mobileOpen}
+                    badge={item.path === '/dashboard' ? todayBadge : 0}
+                  />
+                ))}
+              </div>
+            )
+          })}
         </nav>
 
         {/* ── Collapse Toggle ─────────────────────────── */}
@@ -316,22 +328,21 @@ useEffect(() => {
           <div className="db-header__actions">
             {headerActions}
             <button className="db-btn--icon" title="الإشعارات" style={{ position: 'relative' }}>
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-  </svg>
-  <span style={{
-    position: 'absolute', top: -4, right: -4,
-    background: 'var(--red)', color: '#fff',
-    fontSize: 9, fontWeight: 800,
-    width: 14, height: 14, borderRadius: '50%',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-  }}>
-    0
-  </span>
-</button>
-
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              <span style={{
+                position: 'absolute', top: -4, right: -4,
+                background: 'var(--red)', color: '#fff',
+                fontSize: 9, fontWeight: 800,
+                width: 14, height: 14, borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                0
+              </span>
+            </button>
 
             <button
               className="db-btn--icon"
@@ -355,17 +366,16 @@ useEffect(() => {
         </header>
 
         {/* ── Page Content ────────────────────────────── */}
-{/* ── Page Content ────────────────────────────────── */}
-<main
-  className={[
-    'db-main',
-    'db-animate-in',
-    collapsed && !isMobile ? 'db-main--collapsed' : '',
-  ].filter(Boolean).join(' ')}
-  style={{ overflowY: 'auto', height: `calc(100vh - var(--header-h))` }}
->
-  {children}
-</main>
+        <main
+          className={[
+            'db-main',
+            'db-animate-in',
+            collapsed && !isMobile ? 'db-main--collapsed' : '',
+          ].filter(Boolean).join(' ')}
+          style={{ overflowY: 'auto', height: `calc(100vh - var(--header-h))` }}
+        >
+          {children}
+        </main>
       </div>
 
       <style>{`
