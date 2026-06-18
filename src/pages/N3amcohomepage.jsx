@@ -1019,38 +1019,52 @@ const waLink = waNumber ? `https://wa.me/${waNumber}` : null
         </div>
       </section>
 
-      {/* ════ WAITLIST ════ */}
-<section id="waitlist" className="section-pad" style={{ padding: '110px 24px', background: '#fafaf7' }}>
-  <div style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center' }}>
-    <div className="card waitlist-card" style={{ padding: '60px 56px', borderColor: 'rgba(184,132,58,0.25)', background: 'linear-gradient(160deg, #fff 60%, #fdf8f0)', boxShadow: '0 8px 40px rgba(28,25,23,0.07)' }}>
-      <div className="chip" style={{ marginBottom: 18 }}><span className="chip-dot" /> قائمة الانتظار</div>
-      <h2 style={{ fontSize: 30, fontWeight: 900, color: '#1c1917', marginBottom: 12 }}>متفوتكش الدفعة الجاية</h2>
-      <p style={{ fontSize: 15, color: '#78716c', marginBottom: 32, lineHeight: 1.9 }}>
-                      سجّل بياناتك وهنبعتلك إشعار فور ما نعلن الدفعة الجديدة — قبل ما نفتحها للعموم.
+{/* ════ WAITLIST ════ */}
+      <section id="waitlist" style={{ padding: '100px 24px', background: '#fafaf7' }}>
+        <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
+          <div className="card waitlist-card" style={{ padding: '56px 48px', borderColor: 'rgba(184,132,58,0.25)', background: 'linear-gradient(160deg, #fff 60%, #fdf8f0)', boxShadow: '0 8px 40px rgba(28,25,23,0.07)' }}>
+            <div className="chip" style={{ marginBottom: 18 }}><span className="chip-dot" /> قائمة الانتظار</div>
+            <h2 style={{ fontSize: 28, fontWeight: 900, color: '#1c1917', marginBottom: 12 }}>متفوتكش الدفعة الجاية</h2>
+            <p style={{ fontSize: 14, color: '#78716c', marginBottom: 34, lineHeight: 1.9, maxWidth: 460, margin: '0 auto 34px' }}>
+              سجّل بياناتك وهنبعتلك إشعار فور ما نعلن الدفعة الجديدة — قبل ما نفتحها للعموم.
             </p>
             {wlJoined ? (
-              <div style={{ padding: '16px', borderRadius: 12, background: 'rgba(22,163,74,0.07)', border: '1.5px solid rgba(22,163,74,0.2)', color: '#16a34a', fontSize: 14, fontWeight: 700 }}>
+              <div style={{ padding: '20px', borderRadius: 14, background: 'rgba(22,163,74,0.07)', border: '1.5px solid rgba(22,163,74,0.2)', color: '#16a34a', fontSize: 15, fontWeight: 700 }}>
                 تم تسجيلك! هنبعتلك إشعار قبل أي حد تاني ✓
               </div>
             ) : (
-             <div className="waitlist-form" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div className="waitlist-row" style={{ display: 'flex', gap: 12 }}>
-            <input className="n3-input" placeholder="اسمك"   value={wlName}  onChange={e => setWlName(e.target.value)}  style={{ flex: 1, height: 54, fontSize: 15 }} />
-            <input className="n3-input" placeholder="موبايلك" value={wlPhone} onChange={e => setWlPhone(e.target.value)} style={{ flex: 1, height: 54, fontSize: 15 }} dir="ltr" />
-          </div>
-          <div className="waitlist-row" style={{ display: 'flex', gap: 12 }}>
-            <input className="n3-input" type="number" placeholder="كمية تقريبية (كجم)" value={wlKg} onChange={e => setWlKg(e.target.value)} style={{ flex: 1, height: 54, fontSize: 15 }} />
-            <button className="btn-gold" onClick={handleWaitlist} disabled={wlLoading} style={{ height: 54, padding: '0 28px', fontSize: 15, flexShrink: 0 }}>
-              {wlLoading ? <Icons.loading /> : 'انضم للقائمة'}
-            </button>
-          </div>
-          {wlError && <div style={{ fontSize: 13, color: '#dc2626', fontWeight: 700, textAlign: 'right' }}>{wlError}</div>}
-        </div>
+              <div className="waitlist-form" style={{ display: 'flex', flexDirection: 'column', gap: 18, textAlign: 'right' }}>
+                <div className="waitlist-row" style={{ display: 'flex', gap: 14 }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    <label style={{ fontSize: 12, fontWeight: 800, color: '#57534e' }}>الاسم</label>
+                    <input className="n3-input" placeholder="اسمك بالكامل" value={wlName} onChange={e => setWlName(e.target.value)} style={{ width: '100%', height: 56, fontSize: 15 }} />
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    <label style={{ fontSize: 12, fontWeight: 800, color: '#57534e' }}>رقم الموبايل</label>
+                    <input className="n3-input" placeholder="01xxxxxxxxx" value={wlPhone} onChange={e => setWlPhone(e.target.value)} style={{ width: '100%', height: 56, fontSize: 15 }} dir="ltr" />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  <label style={{ fontSize: 12, fontWeight: 800, color: '#57534e' }}>الكمية التقريبية (كجم) — اختياري</label>
+                  <input className="n3-input" type="number" placeholder="مثلاً 3" value={wlKg} onChange={e => setWlKg(e.target.value)} style={{ width: '100%', height: 56, fontSize: 15 }} />
+                </div>
+
+                {wlError && (
+                  <div style={{ background: 'rgba(220,38,38,0.07)', border: '1.5px solid rgba(220,38,38,0.2)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#dc2626', fontWeight: 700 }}>
+                    {wlError}
+                  </div>
+                )}
+
+                <button className="btn-gold" onClick={handleWaitlist} disabled={wlLoading} style={{ width: '100%', height: 58, fontSize: 16, marginTop: 6 }}>
+                  {wlLoading ? <Icons.loading /> : 'انضم للقائمة'}
+                </button>
+              </div>
             )}
           </div>
         </div>
       </section>
-      <a
+            <a
   href={waLink}
   target="_blank"
   rel="noopener noreferrer"
