@@ -719,8 +719,13 @@ function EditRoleModal({ role, allPerms, onClose, onSuccess }) {
         const r = await fetch(`${API_BASE_URL}/api/roles/${role.id}/permissions`, { headers: authHeaders() })
         if (r.ok) {
           const d = await r.json()
-          const perms = d?.permissions || d?.data?.permissions || d || []
-          setSelected(perms.map(p => p.code || p))
+          const perms =
+            Array.isArray(d)                    ? d :
+            Array.isArray(d?.permissions)       ? d.permissions :
+            Array.isArray(d?.data?.permissions) ? d.data.permissions :
+            Array.isArray(d?.data)              ? d.data :
+            []
+          setSelected(perms.map(p => typeof p === 'string' ? p : p.code || p.Code || '').filter(Boolean))
         }
       } catch {}
       setFetching(false)
