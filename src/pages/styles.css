@@ -173,8 +173,9 @@ body {
   .hero-btns { flex-direction: column !important; align-items: center !important; }
   .hero-btns button, .hero-btns a { width: 100% !important; max-width: 320px; }
   .section-pad { padding: 64px 16px !important; }
-  .waitlist-card { padding: 32px 20px !important; }
-  .nav-pad { padding: 0 16px !important; }
+.waitlist-card { padding: 36px 22px !important; }
+  .waitlist-row { flex-direction: column !important; }
+  .waitlist-row input, .waitlist-row button { width: 100% !important; }  .nav-pad { padding: 0 16px !important; }
   .batch-card { padding: 20px 16px !important; }
 }
 @media(max-width:480px){
