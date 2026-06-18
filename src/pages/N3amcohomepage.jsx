@@ -504,40 +504,55 @@ function TrackModal({ onClose }) {
 function ProductsCarousel({ products, normalizeProduct, batch, onSelect }) {
   const trackRef = useRef(null)
   const autoTimerRef = useRef(null)
-  const isHoveredRef = useRef(false)
+  const isPausedRef = useRef(false)
+  const resumeTimeoutRef = useRef(null)
 
   useEffect(() => {
     const track = trackRef.current
     if (!track) return
 
     autoTimerRef.current = setInterval(() => {
-      if (isHoveredRef.current) return
+      if (isPausedRef.current) return
       track.scrollLeft -= 1
       if (Math.abs(track.scrollLeft) >= (track.scrollWidth - track.clientWidth)) {
         track.scrollLeft = 0
       }
     }, 30)
 
-    return () => clearInterval(autoTimerRef.current)
+    return () => {
+      clearInterval(autoTimerRef.current)
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current)
+    }
   }, [products])
 
-  const scrollByCard = (dir) => {
-    const track = trackRef.current
-    if (!track) return
-    const cardWidth = track.firstChild ? track.firstChild.getBoundingClientRect().width + 18 : 260
-    track.scrollBy({ left: dir * cardWidth, behavior: 'smooth' })
+  const pauseAuto = () => {
+    isPausedRef.current = true
+    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current)
   }
+
+  const scheduleResume = (delay = 2500) => {
+    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current)
+    resumeTimeoutRef.current = setTimeout(() => {
+      isPausedRef.current = false
+    }, delay)
+  }
+
 
   return (
     <div
-      style={{ position: 'relative', maxWidth: 1180, margin: '0 auto', padding: '0 24px' }}
-      onMouseEnter={() => { isHoveredRef.current = true }}
-      onMouseLeave={() => { isHoveredRef.current = false }}
+      style={{ position: 'relative', maxWidth: 1180, margin: '0 auto' }}
+      onMouseEnter={pauseAuto}
+      onMouseLeave={() => scheduleResume(300)}
     >
       <div
         ref={trackRef}
         className="products-scroll"
-        style={{ display: 'flex', gap: 18, overflowX: 'auto', scrollBehavior: 'smooth', paddingBottom: 8 }}
+        style={{ display: 'flex', gap: 18, overflowX: 'auto', overflowY: 'visible', scrollBehavior: 'smooth', paddingTop: 16, paddingBottom: 24, paddingInline: 24, touchAction: 'pan-x' }}
+        onTouchStart={pauseAuto}
+        onTouchEnd={() => scheduleResume()}
+        onTouchCancel={() => scheduleResume()}
+        onPointerDown={pauseAuto}
+        onPointerUp={() => scheduleResume()}
       >
         {products.map(raw => {
           const p = normalizeProduct(raw)
@@ -589,17 +604,7 @@ background: imageUrl
         })}
       </div>
 
-      <button
-        aria-label="السابق"
-        className="carousel-arrow carousel-arrow--right"
-        onClick={() => scrollByCard(1)}
-      ><Icons.arrowLeft /></button>
-      <button
-        aria-label="التالي"
-        className="carousel-arrow carousel-arrow--left"
-        onClick={() => scrollByCard(-1)}
-        style={{ transform: 'translateY(-50%) scaleX(-1)' }}
-      ><Icons.arrowLeft /></button>
+      
     </div>
   )
 }
@@ -683,7 +688,7 @@ const normalizeProduct = (p) => ({
   nameEn: p.nameEn || '',
   pricePerKg: p.defaultSellingPrice || p.pricePerKg || 0,
   minKg: p.minStock || p.minKg || 1,
-  available: p.isActive !== undefined ? p.isActive : (p.available !== undefined ? p.available : true),
+  available: p.available !== undefined ? p.available : (p.isActive !== undefined ? p.isActive : true),
 
   tag: p.tag || null,
   description: p.description || null,
@@ -881,7 +886,7 @@ const waLink = waNumber ? `https://wa.me/${waNumber}` : null
       </section>
 
    {/* ════ PRODUCTS ════ */}
-<section id="products" style={{ padding: '88px 0', background: '#fafaf7', overflow: 'hidden' }}>
+<section id="products" style={{ padding: '88px 0', background: '#fafaf7', overflowX: 'clip', overflowY: 'visible' }}>
   <div style={{ maxWidth: 1180, margin: '0 auto', padding: '0 24px' }}>
     <div style={{ textAlign: 'center', marginBottom: 48 }}>
       <div className="chip" style={{ marginBottom: 14 }}><span className="chip-dot" /> تشكيلتنا</div>

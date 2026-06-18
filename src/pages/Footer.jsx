@@ -142,7 +142,7 @@ export default function Footer({ settings = {}, scrollTo }) {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           flexWrap: 'wrap', gap: 10,
         }}>
-          <div style={{ fontSize: 11, color: '#3c3836' }}>© 2025 {siteName} — جميع الحقوق محفوظة</div>
+          <div style={{ fontSize: 11, color: '#3c3836' }}>© 2026 {siteName} — جميع الحقوق محفوظة</div>
           <div style={{ display: 'flex', gap: 18 }}>
             {['سياسة الخصوصية', 'الشروط والأحكام'].map(l => (
               <a key={l} href="#" style={{ fontSize: 11, color: '#3c3836', textDecoration: 'none' }}>{l}</a>
