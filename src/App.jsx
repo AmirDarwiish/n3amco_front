@@ -19,7 +19,7 @@ const ProductsList        = lazy(() => import('./pages/dashboard/ProductsList'))
 const MilkCollectionsPage = lazy(() => import('./pages/dashboard/MilkCollectionsPage'))
 const CustomersPage       = lazy(() => import('./pages/dashboard/Customerspage'))
 const UnitsPage       = lazy(() => import('./pages/dashboard/Unitspage'))
-const WebsiteManager       = lazy(() => import('./pages/dashboard/websitemanager'))
+const WebsiteManager       = lazy(() => import('./pages/dashboard/Websitemanager'))
 
 // إضافة صفحة النظام المالي
 const AccountingModule    = lazy(() => import('./pages/dashboard/AccountingModule'))
