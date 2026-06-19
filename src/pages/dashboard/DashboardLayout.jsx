@@ -93,7 +93,9 @@ const NAV = [
     section: 'الإدارة',
     items: [
       { path: '/dashboard/users',            label: 'المستخدمون',    Icon: IcoUsers,  permission: 'USERS_VIEW' },
+      { path: '/dashboard/websitemanager', label: 'محتوي الموقع', Icon: IcoMoon, permission: null         },
       { path: '/dashboard/reports/activity', label: 'تقارير النشاط', Icon: IcoReport, permission: null         },
+
     ],
   },
 ]

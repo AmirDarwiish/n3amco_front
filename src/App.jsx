@@ -19,6 +19,7 @@ const ProductsList        = lazy(() => import('./pages/dashboard/ProductsList'))
 const MilkCollectionsPage = lazy(() => import('./pages/dashboard/MilkCollectionsPage'))
 const CustomersPage       = lazy(() => import('./pages/dashboard/Customerspage'))
 const UnitsPage       = lazy(() => import('./pages/dashboard/Unitspage'))
+const WebsiteManager       = lazy(() => import('./pages/dashboard/websitemanager'))
 
 // إضافة صفحة النظام المالي
 const AccountingModule    = lazy(() => import('./pages/dashboard/AccountingModule'))
@@ -146,6 +147,10 @@ const App = () => (
  <Route path="/dashboard/units" 
             element={<PrivateRoute><Suspense fallback={<DashboardLoader />}><UnitsPage /></Suspense></PrivateRoute>} 
           />
+           <Route path="/dashboard/websitemanager" 
+            element={<PrivateRoute><Suspense fallback={<DashboardLoader />}><WebsiteManager /></Suspense></PrivateRoute>} 
+          />
+
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
