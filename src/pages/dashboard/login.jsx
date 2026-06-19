@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import API_BASE_URL from '../../config'
 
 export default function DashboardLogin() {
-const [email, setEmail]       = useState('admin@system.com')
+const [email, setEmail]       = useState('admin@n3amco.com')
 const [password, setPassword] = useState('123123123')
   const [error, setError]       = useState(null)
   const [loading, setLoading]   = useState(false)
