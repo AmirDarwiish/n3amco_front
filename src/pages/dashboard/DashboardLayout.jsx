@@ -82,6 +82,8 @@ const NAV = [
     items: [
       { path: '/dashboard/products', label: 'المنتجات والمخزون', Icon: IcoInventory, permission: 'PRODUCTS_VIEW' },
       { path: '/dashboard/Units',    label: 'الوحدات',            Icon: IcoInventory, permission: 'UNITS_VIEW'    },
+      { path: '/dashboard/Batchespage',    label: 'ادارة الدفعات',            Icon: IcoInventory, permission: 'BATCH_READ'},
+
     ],
   },
   {

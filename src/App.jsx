@@ -21,6 +21,7 @@ const CustomersPage       = lazy(() => import('./pages/dashboard/Customerspage')
 const UnitsPage       = lazy(() => import('./pages/dashboard/Unitspage'))
 const WebsiteManager       = lazy(() => import('./pages/dashboard/Websitemanager'))
 const Waitlistpage       = lazy(() => import('./pages/dashboard/Waitlistpage'))
+const Batchespage        = lazy(() => import('./pages/dashboard/Batchespage'))
 
 // إضافة صفحة النظام المالي
 const AccountingModule    = lazy(() => import('./pages/dashboard/AccountingModule'))
@@ -154,6 +155,10 @@ const App = () => (
       <Route path="/dashboard/Waitlistpage" 
             element={<PrivateRoute><Suspense fallback={<DashboardLoader />}><Waitlistpage /></Suspense></PrivateRoute>} 
           />
+      <Route path="/dashboard/Batchespage" 
+            element={<PrivateRoute><Suspense fallback={<DashboardLoader />}><Batchespage /></Suspense></PrivateRoute>} 
+          />
+
 
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
