@@ -3,7 +3,7 @@ import {
   Package, Plus, Search, Pencil, Trash2,
   AlertTriangle, CheckCircle, X, Loader2,
   ChevronRight, ChevronLeft, RefreshCw,
-  Calendar, Scale, TrendingUp
+  Calendar, Scale, TrendingUp, ClipboardList
 } from 'lucide-react'
 import DashboardLayout from './DashboardLayout'
 import API_BASE_URL from '../../config'
@@ -22,6 +22,13 @@ const STATUS_MAP = {
   Upcoming: { label: 'قادم',  color: 'var(--gold)',  bg: 'var(--gold-08)'  },
   Full:     { label: 'ممتلئ', color: 'var(--teal)',  bg: 'var(--teal-bg)'  },
   Closed:   { label: 'مغلق',  color: 'var(--red)',   bg: 'var(--red-bg)'   },
+}
+
+const RESERVATION_STATUS_MAP = {
+  Pending:   { label: 'قيد الانتظار', color: 'var(--gold)'  },
+  Confirmed: { label: 'مؤكد',         color: 'var(--green)' },
+  Cancelled: { label: 'ملغي',         color: 'var(--red)'   },
+  Delivered: { label: 'تم التوصيل',   color: 'var(--teal)'  },
 }
 
 function Toast({ msg, type, onDone }) {
@@ -241,7 +248,166 @@ function FormModal({ editData, products, onClose, onSuccess }) {
   )
 }
 
-function BatchesTable({ batches, onEdit, onDelete, onStatusChange }) {
+/* ════════════════════════════════════════════════════════
+   RESERVATIONS MODAL
+════════════════════════════════════════════════════════ */
+function ReservationsModal({ batch, onClose }) {
+  const [reservations, setReservations] = useState([])
+  const [loading,      setLoading]      = useState(true)
+  const [error,        setError]        = useState(null)
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true); setError(null)
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/api/Reservations?batchId=${batch.id}&pageSize=100`,
+          { headers: authHeaders() }
+        )
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const json = await res.json()
+        const d = json?.data?.data ?? json?.data ?? json
+        setReservations(Array.isArray(d) ? d : (d.items ?? d.data ?? []))
+      } catch (e) { setError(e.message) }
+      finally { setLoading(false) }
+    }
+    load()
+  }, [batch.id])
+
+  const totalKg  = reservations.reduce((s, r) => s + Number(r.reservedKg  || 0), 0)
+  const totalAmt = reservations.reduce((s, r) => s + Number(r.reservedKg || 0) * Number(r.pricePerKg || 0), 0)
+  const totalDep = reservations.reduce((s, r) => s + Number(r.depositAmount || 0), 0)
+
+  return (
+    <div className="db-overlay" onClick={onClose}>
+      <div
+        className="db-modal"
+        style={{ maxWidth: 860, width: '100%' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="db-modal__accent" />
+        <div className="db-modal__header">
+          <span className="db-modal__title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <ClipboardList size={18} color="var(--gold)" />
+            حجوزات — {batch.title}
+          </span>
+          <button className="db-modal__close" onClick={onClose}>x</button>
+        </div>
+
+        {/* Summary cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 18 }}>
+          {[
+            { label: 'عدد الحجوزات',   value: reservations.length, unit: 'حجز',  color: 'var(--gold)'  },
+            { label: 'إجمالي الكميات', value: fmt(totalKg),        unit: 'كجم',  color: 'var(--teal)'  },
+            { label: 'إجمالي القيمة',  value: fmt(totalAmt),       unit: 'ج.م',  color: 'var(--green)' },
+            { label: 'إجمالي العربون', value: fmt(totalDep),       unit: 'ج.م',  color: 'var(--gold)'  },
+          ].map(({ label, value, unit, color }) => (
+            <div key={label} style={{ background: 'var(--bg-base)', borderRadius: 12, padding: '12px 16px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 4 }}>{label}</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color }}>
+                {value} <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{unit}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {loading && (
+          <div className="db-loading">
+            <Loader2 size={24} className="db-spinner" color="var(--gold)" /> جاري التحميل…
+          </div>
+        )}
+        {error && (
+          <div className="db-error-box" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AlertTriangle size={15} /> {error}
+          </div>
+        )}
+        {!loading && !error && reservations.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+            <ClipboardList size={36} style={{ opacity: 0.2, marginBottom: 10 }} />
+            <div style={{ fontSize: 14, fontWeight: 700 }}>لا توجد حجوزات على هذه الدفعة</div>
+          </div>
+        )}
+        {!loading && !error && reservations.length > 0 && (
+          <div className="db-table-wrap" style={{ maxHeight: 420, overflowY: 'auto' }}>
+            <table className="db-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>العميل</th>
+                  <th>الموبايل</th>
+                  <th>العنوان</th>
+                  <th>الكمية</th>
+                  <th>السعر/كجم</th>
+                  <th>الإجمالي</th>
+                  <th>العربون</th>
+                  <th>الحالة</th>
+                  <th>التاريخ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reservations.map((r, i) => {
+                  const s = RESERVATION_STATUS_MAP[r.status] || { label: r.status, color: 'var(--text-muted)' }
+                  const total = Number(r.reservedKg || 0) * Number(r.pricePerKg || 0)
+                  return (
+                    <tr key={r.id ?? i}>
+                      <td>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', background: 'var(--bg-base)', padding: '2px 8px', borderRadius: 6 }}>
+                          #{r.id}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 700, color: 'var(--text)' }}>{r.customerName || '—'}</div>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: 12, color: 'var(--text-sec)', direction: 'ltr', display: 'inline-block' }}>
+                          {r.phone || '—'}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 140, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.address}>
+                          {r.address || '—'}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ fontWeight: 800, color: 'var(--text)' }}>{fmt(r.reservedKg)} كجم</span>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: 12, color: 'var(--text-sec)' }}>{fmt(r.pricePerKg)} ج.م</span>
+                      </td>
+                      <td>
+                        <span style={{ fontWeight: 800, color: 'var(--gold)' }}>{fmt(total)} ج.م</span>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: 12, color: r.depositAmount > 0 ? 'var(--green)' : 'var(--text-muted)' }}>
+                          {fmt(r.depositAmount)} ج.م
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 5,
+                          padding: '3px 10px', borderRadius: 99, fontSize: 11, fontWeight: 800,
+                          color: s.color, background: `${s.color}18`, border: `1px solid ${s.color}30`,
+                        }}>
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: s.color }} />
+                          {s.label}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{fmtDate(r.createdAt)}</span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function BatchesTable({ batches, onEdit, onDelete, onStatusChange, onReservations }) {
   if (batches.length === 0)
     return (
       <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -281,14 +447,33 @@ function BatchesTable({ batches, onEdit, onDelete, onStatusChange }) {
               <td><StatusBadge status={b.status} /></td>
               <td><span style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 160, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.notes || '—'}</span></td>
               <td>
-                <div style={{ display: 'flex', gap: 5 }}>
-                  <button className="db-btn db-btn--ghost db-btn--sm" onClick={() => onEdit(b)} style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--gold)', borderColor: 'var(--gold-20)' }}>
+                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                  <button
+                    className="db-btn db-btn--ghost db-btn--sm"
+                    onClick={() => onReservations(b)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--teal)', borderColor: 'var(--teal-bg)' }}
+                  >
+                    <ClipboardList size={13} /> الحجوزات
+                  </button>
+                  <button
+                    className="db-btn db-btn--ghost db-btn--sm"
+                    onClick={() => onEdit(b)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--gold)', borderColor: 'var(--gold-20)' }}
+                  >
                     <Pencil size={13} /> تعديل
                   </button>
-                  <button className="db-btn db-btn--ghost db-btn--sm" onClick={() => onStatusChange(b)} style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--teal)', borderColor: 'var(--teal-bg)' }}>
+                  <button
+                    className="db-btn db-btn--ghost db-btn--sm"
+                    onClick={() => onStatusChange(b)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--teal)', borderColor: 'var(--teal-bg)' }}
+                  >
                     <RefreshCw size={13} /> الحالة
                   </button>
-                  <button className="db-btn db-btn--danger db-btn--sm" onClick={() => onDelete(b)} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <button
+                    className="db-btn db-btn--danger db-btn--sm"
+                    onClick={() => onDelete(b)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -316,11 +501,12 @@ function BatchesContent() {
   const [error,   setError]   = useState(null)
   const [toast,   setToast]   = useState(null)
 
-  const [showCreate,    setShowCreate]    = useState(false)
-  const [editData,      setEditData]      = useState(null)
-  const [deleteTarget,  setDeleteTarget]  = useState(null)
-  const [deleteLoading, setDeleteLoading] = useState(false)
-  const [statusTarget,  setStatusTarget]  = useState(null)
+  const [showCreate,         setShowCreate]         = useState(false)
+  const [editData,           setEditData]           = useState(null)
+  const [deleteTarget,       setDeleteTarget]       = useState(null)
+  const [deleteLoading,      setDeleteLoading]      = useState(false)
+  const [statusTarget,       setStatusTarget]       = useState(null)
+  const [reservationsTarget, setReservationsTarget] = useState(null)
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -393,6 +579,9 @@ function BatchesContent() {
         <StatusModal batch={statusTarget}
           onClose={() => setStatusTarget(null)} onSuccess={handleSuccess} />
       )}
+      {reservationsTarget && (
+        <ReservationsModal batch={reservationsTarget} onClose={() => setReservationsTarget(null)} />
+      )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12, marginBottom: 22 }}>
         <div>
@@ -464,7 +653,13 @@ function BatchesContent() {
           <div className="db-loading"><Loader2 size={32} className="db-spinner" color="var(--gold)" /> جاري تحميل الدفعات…</div>
         )}
         {!loading && !error && (
-          <BatchesTable batches={filtered} onEdit={setEditData} onDelete={setDeleteTarget} onStatusChange={setStatusTarget} />
+          <BatchesTable
+            batches={filtered}
+            onEdit={setEditData}
+            onDelete={setDeleteTarget}
+            onStatusChange={setStatusTarget}
+            onReservations={setReservationsTarget}
+          />
         )}
         {!loading && !error && totalPages > 1 && (
           <div className="db-pagination">

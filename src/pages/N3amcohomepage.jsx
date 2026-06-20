@@ -613,7 +613,7 @@ background: imageUrl
   )
 }
 function BatchCard({ batch, onReserve, onWaitlist }) {
-  const countdown   = useCountdown(batch.slaughterDate || batch.SlaughterDate || null)
+  const countdown   = useCountdown(batch.closingDate || batch.slaughterDate || null)
   const reservedKg  = Number(batch.reservedKg  ?? batch.ReservedKg  ?? 0)
   const totalKg     = Number(batch.totalKg     ?? batch.TotalKg     ?? 1) || 1
   const reservedPct = Math.min(100, Math.round((reservedKg / totalKg) * 100))
@@ -682,9 +682,11 @@ function BatchCard({ batch, onReserve, onWaitlist }) {
       </div>
 
       {/* Countdown — فقط لو مش ممتلئ */}
-      {!isFull && batch.closingDate && (
+      {!isFull && (batch.closingDate || batch.slaughterDate) && (
         <div style={{ textAlign: 'center', marginBottom: 26, padding: '20px', borderRadius: 16, background: 'rgba(184,132,58,0.04)', border: '1.5px dashed rgba(184,132,58,0.2)' }}>
-          <div style={{ fontSize: 11, color: '#a8a29e', fontWeight: 700, letterSpacing: 2, marginBottom: 14 }}>⏳ الحجز بيقفل بعد</div>
+          <div style={{ fontSize: 11, color: '#a8a29e', fontWeight: 700, letterSpacing: 2, marginBottom: 14 }}>
+            {batch.closingDate ? '⏳ الحجز بيقفل بعد' : '🔪 موعد الذبح بعد'}
+          </div>
           <div className="countdown-row" style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
             {[['يوم', countdown.d], ['ساعة', countdown.h], ['دقيقة', countdown.m], ['ثانية', countdown.s]].map(([label, val]) => (
               <div key={label} className="countdown-box" style={{ position: 'relative' }}>
@@ -707,7 +709,7 @@ function BatchCard({ batch, onReserve, onWaitlist }) {
           </div>
         ) : (
           <button className="btn-gold" style={{ height: 52, padding: '0 44px', fontSize: 15 }} onClick={onReserve}>
-            اختار منتجك وابدأ الحجز <Icons.arrowLeft />
+            احجز من الدفعة دي <Icons.arrowLeft />
           </button>
         )}
       </div>
@@ -916,7 +918,17 @@ const waLink = waNumber ? `https://wa.me/${waNumber}` : null
             </div>
           ) : batches.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-              {batches.map(batch => <BatchCard key={batch.id} batch={batch} onReserve={() => scrollTo('products')} onWaitlist={() => scrollTo('waitlist')} />)}
+              {batches.map(b => (
+                <BatchCard
+                  key={b.id}
+                  batch={b}
+                  onReserve={() => {
+                    const product = products.find(p => p.id === b.productId) || products[0] || null
+                    if (product) setSelectedProduct({ product, batch: b })
+                  }}
+                  onWaitlist={() => scrollTo('waitlist')}
+                />
+              ))}
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '60px 24px' }}>
