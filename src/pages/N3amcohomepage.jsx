@@ -754,11 +754,13 @@ const [batches, setBatches] = useState([MOCK_BATCH])
         if (Array.isArray(homeData.sections))                                             setSections(homeData.sections)
         if (Array.isArray(homeData.banners)          && homeData.banners.length)          setBanners(homeData.banners)
         if (Array.isArray(homeData.featuredProducts) && homeData.featuredProducts.length) setProducts(homeData.featuredProducts)
-        if ((!batchData || batchData.length === 0) && Array.isArray(homeData.activeBatches) && homeData.activeBatches.length) {
-          setBatches(homeData.activeBatches)
-        }
+  
       }
-      if (batchData && batchData.length > 0) setBatches(batchData)
+      if (homeData?.activeBatches?.length > 0) {
+        setBatches(homeData.activeBatches)
+      } else if (batchData && batchData.length > 0) {
+        setBatches(batchData)
+      }
       setLoadingData(false)
     }
     loadData()
