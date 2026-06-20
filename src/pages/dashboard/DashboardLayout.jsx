@@ -74,7 +74,7 @@ const NAV = [
       { path: '/dashboard/sales/new', label: 'فاتورة جديدة',   Icon: IcoNewSale,  permission: 'SALES_CREATE' },
       { path: '/dashboard/sales',     label: 'قائمة المبيعات', Icon: IcoSaleList, permission: 'SALES_READ'   },
       { path: '/dashboard/customers', label: 'العملاء',         Icon: IcoUsers,    permission: 'CUSTOMERS_VIEW' },
-      { path: '/dashboard/Waitlistpage', label: 'قائمة الانتزار',         Icon: IcoUsers,    permission: 'WAITLIST_READ' },
+      { path: '/dashboard/Waitlistpage', label: 'قائمة الانتظار',         Icon: IcoUsers,    permission: 'WAITLIST_READ' },
     ],
   },
   {

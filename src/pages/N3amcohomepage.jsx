@@ -633,6 +633,7 @@ export default function HomePage() {
   const [wlJoined,  setWlJoined]  = useState(false)
   const [wlLoading, setWlLoading] = useState(false)
   const [wlError,   setWlError]   = useState('')
+  const [wlNotes, setWlNotes] = useState('')
 
   const countdown   = useCountdown(batch?.closingDate)
   const reservedKg  = batch?.reservedKg || 0
@@ -673,9 +674,10 @@ const scrollTo = (id) => {
   /* ── Waitlist Submit ── */
   const handleWaitlist = async () => {
     if (!wlName.trim() || !wlPhone.trim()) { setWlError('الاسم والموبايل مطلوبين'); return }
+if (!wlKg) { setWlError('الكمية مطلوبة'); return }
     setWlLoading(true); setWlError('')
     try {
-      await submitWaitlist({ name: wlName, phone: wlPhone, requestedKg: Number(wlKg) || 0 })
+await submitWaitlist({ name: wlName, phone: wlPhone, requestedKg: Number(wlKg), notes: wlNotes })
       setWlJoined(true)
     } catch (e) { setWlError(e.message) }
     setWlLoading(false)
@@ -1045,9 +1047,14 @@ const waLink = waNumber ? `https://wa.me/${waNumber}` : null
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                  <label style={{ fontSize: 12, fontWeight: 800, color: '#57534e' }}>الكمية التقريبية (كجم) — اختياري</label>
+<div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  <label style={{ fontSize: 12, fontWeight: 800, color: '#57534e' }}>الكمية التقريبية (كجم) *</label>
                   <input className="n3-input" type="number" placeholder="مثلاً 3" value={wlKg} onChange={e => setWlKg(e.target.value)} style={{ width: '100%', height: 56, fontSize: 15 }} />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  <label style={{ fontSize: 12, fontWeight: 800, color: '#57534e' }}>ملاحظات — اختياري</label>
+                  <input className="n3-input" placeholder="أي تفاصيل إضافية..." value={wlNotes} onChange={e => setWlNotes(e.target.value)} style={{ width: '100%', height: 56, fontSize: 15 }} />
                 </div>
 
                 {wlError && (
