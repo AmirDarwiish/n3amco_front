@@ -21,8 +21,8 @@ async function fetchOpenBatch() {
     if (!res.ok) return null
     const json = await res.json()
     const data = json?.data ?? json ?? null
-    return Array.isArray(data) ? data[0] ?? null : data
-  } catch { return null }
+    return Array.isArray(data) ? data : (data ? [data] : [])
+  } catch { return [] }
 }
 async function submitReservation(data) {
   const res = await fetch(`${API_BASE_URL}/api/v1/public/reservations`, {
@@ -501,7 +501,7 @@ function TrackModal({ onClose }) {
     </div>
   )
 }
-function ProductsCarousel({ products, normalizeProduct, batch, onSelect }) {
+function ProductsCarousel({ products, normalizeProduct, batches, onSelect }) {
   const trackRef = useRef(null)
   const autoTimerRef = useRef(null)
   const isPausedRef = useRef(false)
@@ -593,8 +593,12 @@ background: imageUrl
                 <button
                   className={p.available ? 'btn-gold' : 'btn-ghost'}
                   style={{ width: '100%', height: 42, fontSize: 13, opacity: p.available ? 1 : 0.5, cursor: p.available ? 'pointer' : 'not-allowed' }}
-                  disabled={!p.available || !batch}
-                  onClick={() => p.available && batch && onSelect(raw)}
+                  disabled={!p.available || !batches?.length}
+                  onClick={() => {
+                    if (!p.available || !batches?.length) return
+                    const openBatch = batches.find(b => (b.status||'').toLowerCase() === 'open' && (b.totalKg - b.reservedKg) > 0) || batches[0]
+                    onSelect({ product: raw, batch: openBatch })
+                  }}
                 >
                   {p.available ? 'احجز دلوقتي' : 'الكمية نفدت'}
                 </button>
@@ -605,6 +609,103 @@ background: imageUrl
       </div>
 
       
+    </div>
+  )
+}
+function BatchCard({ batch, onReserve, onWaitlist }) {
+  const countdown   = useCountdown(batch.closingDate)
+  const reservedKg  = batch.reservedKg  || 0
+  const totalKg     = batch.totalKg     || 1
+  const reservedPct = Math.min(100, Math.round((reservedKg / totalKg) * 100))
+  const remainingKg = Math.max(0, totalKg - reservedKg)
+  const isFull      = reservedPct >= 100
+
+  return (
+    <div className="card batch-card" style={{ padding: '32px 36px', borderColor: isFull ? 'rgba(220,38,38,0.2)' : 'rgba(184,132,58,0.25)', boxShadow: '0 4px 24px rgba(28,25,23,0.06)' }}>
+      {/* Header */}
+      <div className="batch-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 28 }}>
+        <div>
+          <div style={{ fontSize: 10, color: '#a8a29e', fontWeight: 800, letterSpacing: 2.5, marginBottom: 4 }}>BATCH ID · {batch.id}</div>
+          <div style={{ fontSize: 20, fontWeight: 900, color: '#1c1917' }}>{batch.title || batch.label}</div>
+          <div style={{ fontSize: 13, color: '#78716c', marginTop: 4 }}>
+            موعد الذبح: {new Date(batch.slaughterDate).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </div>
+          {batch.description && <div style={{ fontSize: 13, color: '#78716c', marginTop: 6, lineHeight: 1.7 }}>{batch.description}</div>}
+        </div>
+        {isFull ? (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 99, background: 'rgba(220,38,38,0.08)', border: '1.5px solid rgba(220,38,38,0.2)', color: '#dc2626', fontSize: 12, fontWeight: 800, flexShrink: 0 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#dc2626', display: 'inline-block' }} />
+            الكمية امتلت
+          </div>
+        ) : (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 99, background: 'rgba(22,163,74,0.08)', border: '1.5px solid rgba(22,163,74,0.2)', color: '#16a34a', fontSize: 12, fontWeight: 800, flexShrink: 0 }}>
+            <span className="pulse-anim" style={{ width: 8, height: 8, borderRadius: '50%', background: '#16a34a', display: 'inline-block' }} />
+            الحجز مفتوح
+          </div>
+        )}
+      </div>
+
+      {/* Progress */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+          <span style={{ fontSize: 12, color: '#78716c', fontWeight: 700 }}>الكمية المحجوزة</span>
+          <span style={{ fontSize: 13, fontWeight: 900, color: isFull ? '#dc2626' : 'var(--gold)' }}>{reservedPct}% امتلت</span>
+        </div>
+        <div className="progress-track">
+          <div className="progress-fill" style={{ width: `${reservedPct}%`, background: isFull ? '#dc2626' : undefined, transition: 'width 0.8s ease' }} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+          <span style={{ fontSize: 11, color: '#a8a29e' }}>محجوز: {reservedKg} كجم</span>
+          <span style={{ fontSize: 11, color: isFull ? '#dc2626' : '#a8a29e', fontWeight: isFull ? 700 : 400 }}>
+            {isFull ? 'لا يوجد كمية متاحة' : `فاضل: ${remainingKg} كجم بس`}
+          </span>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="batch-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 28 }}>
+        {[
+          { l: 'الكمية الكلية', v: `${totalKg} كجم`,    a: false },
+          { l: 'فاضل للحجز',   v: isFull ? 'نفدت' : `${remainingKg} كجم`, a: !isFull },
+          { l: 'نسبة الامتلاء', v: `${reservedPct}%`,   a: false },
+        ].map(({ l, v, a }) => (
+          <div key={l} style={{ background: a ? 'rgba(184,132,58,0.06)' : '#f5f4f0', borderRadius: 14, padding: '14px 16px', border: `1.5px solid ${a ? 'rgba(184,132,58,0.25)' : 'rgba(28,25,23,0.08)'}` }}>
+            <div style={{ fontSize: 10, color: '#a8a29e', fontWeight: 700, marginBottom: 5 }}>{l}</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: a ? 'var(--gold)' : '#1c1917' }}>{v}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Countdown — فقط لو مش ممتلئ */}
+      {!isFull && batch.closingDate && (
+        <div style={{ textAlign: 'center', marginBottom: 26, padding: '20px', borderRadius: 16, background: 'rgba(184,132,58,0.04)', border: '1.5px dashed rgba(184,132,58,0.2)' }}>
+          <div style={{ fontSize: 11, color: '#a8a29e', fontWeight: 700, letterSpacing: 2, marginBottom: 14 }}>⏳ الحجز بيقفل بعد</div>
+          <div className="countdown-row" style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {[['يوم', countdown.d], ['ساعة', countdown.h], ['دقيقة', countdown.m], ['ثانية', countdown.s]].map(([label, val]) => (
+              <div key={label} className="countdown-box" style={{ position: 'relative' }}>
+                <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--gold)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{String(val).padStart(2, '0')}</div>
+                <div style={{ fontSize: 10, color: '#a8a29e', marginTop: 5, fontWeight: 700 }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* CTA */}
+      <div style={{ textAlign: 'center' }}>
+        {isFull ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+            <p style={{ fontSize: 13, color: '#78716c', margin: 0 }}>الدفعة دي امتلت — سجّل في قائمة الانتظار وهنعلمك بالدفعة الجاية</p>
+            <button className="btn-gold" style={{ height: 52, padding: '0 44px', fontSize: 15 }} onClick={onWaitlist}>
+              انضم لقائمة الانتظار <Icons.arrowLeft />
+            </button>
+          </div>
+        ) : (
+          <button className="btn-gold" style={{ height: 52, padding: '0 44px', fontSize: 15 }} onClick={onReserve}>
+            اختار منتجك وابدأ الحجز <Icons.arrowLeft />
+          </button>
+        )}
+      </div>
     </div>
   )
 }
@@ -620,10 +721,10 @@ export default function HomePage() {
   const [sliders,   setSliders]   = useState([])
   const [sections,  setSections]  = useState([])
   const [banners,   setBanners]   = useState([])
-  const [batch,     setBatch]     = useState(MOCK_BATCH)
+const [batches, setBatches] = useState([MOCK_BATCH])
   const [products,  setProducts]  = useState(MOCK_PRODUCTS)
 
-  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [selectedProduct, setSelectedProduct] = useState(null) // { product, batch }
   const [showTrack,       setShowTrack]       = useState(false)
 
   // Waitlist state
@@ -635,11 +736,7 @@ export default function HomePage() {
   const [wlError,   setWlError]   = useState('')
   const [wlNotes, setWlNotes] = useState('')
 
-  const countdown   = useCountdown(batch?.closingDate)
-  const reservedKg  = batch?.reservedKg || 0
-  const totalKg     = batch?.totalKg    || 1
-  const reservedPct = Math.min(100, Math.round((reservedKg / totalKg) * 100))
-  const remainingKg = Math.max(0, totalKg - reservedKg)
+  // batch state replaced by batches array — per-batch calcs happen inline
 
   /* ── Load Data ── */
   useEffect(() => {
@@ -652,12 +749,11 @@ export default function HomePage() {
         if (Array.isArray(homeData.sections))                                             setSections(homeData.sections)
         if (Array.isArray(homeData.banners)          && homeData.banners.length)          setBanners(homeData.banners)
         if (Array.isArray(homeData.featuredProducts) && homeData.featuredProducts.length) setProducts(homeData.featuredProducts)
-        if (!batchData && Array.isArray(homeData.activeBatches) && homeData.activeBatches.length) {
-          const openBatch = homeData.activeBatches.find(b => (b.status || '').toLowerCase() === 'open') || homeData.activeBatches[0]
-          if (openBatch) setBatch(openBatch)
+        if ((!batchData || batchData.length === 0) && Array.isArray(homeData.activeBatches) && homeData.activeBatches.length) {
+          setBatches(homeData.activeBatches.filter(b => ['open','upcoming'].includes((b.status||'').toLowerCase())))
         }
       }
-      if (batchData) setBatch(batchData)
+      if (batchData && batchData.length > 0) setBatches(batchData)
       setLoadingData(false)
     }
     loadData()
@@ -715,7 +811,7 @@ const waLink = waNumber ? `https://wa.me/${waNumber}` : null
     <div style={{ fontFamily: "'Cairo', sans-serif", direction: 'rtl', background: '#fafaf7', color: '#1c1917' }}>
 
       {/* Modals */}
-      {selectedProduct && <ReservationModal product={selectedProduct} batch={batch} onClose={() => setSelectedProduct(null)} />}
+      {selectedProduct && <ReservationModal product={selectedProduct.product} batch={selectedProduct.batch} onClose={() => setSelectedProduct(null)} />}
       {showTrack        && <TrackModal onClose={() => setShowTrack(false)} />}
 
       {/* Navbar */}
@@ -797,13 +893,13 @@ const waLink = waNumber ? `https://wa.me/${waNumber}` : null
         </div>
       </section>
 
-      {/* ════ CURRENT BATCH ════ */}
+{/* ════ CURRENT BATCHES ════ */}
       <section id="batch" style={{ padding: '88px 24px', background: '#f5f4f0' }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 44 }}>
-            <div className="chip" style={{ marginBottom: 14 }}><span className="chip-dot" /> الدفعة الحالية</div>
+            <div className="chip" style={{ marginBottom: 14 }}><span className="chip-dot" /> الدفعات الحالية</div>
             <h2 className="sec-h2" style={{ fontSize: 34, fontWeight: 900, color: '#1c1917' }}>
-              {loadingData ? 'جاري التحميل...' : 'الدفعة اللي مفتوحة دلوقتي'}
+              {loadingData ? 'جاري التحميل...' : 'الدفعات المفتوحة دلوقتي'}
             </h2>
           </div>
 
@@ -811,70 +907,9 @@ const waLink = waNumber ? `https://wa.me/${waNumber}` : null
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {[80, 120, 60, 100].map((h, i) => <div key={i} className="skeleton" style={{ height: h, borderRadius: 16 }} />)}
             </div>
-          ) : batch ? (
-            <div className="card batch-card" style={{ padding: '32px 36px', borderColor: 'rgba(184,132,58,0.25)', boxShadow: '0 4px 24px rgba(28,25,23,0.06)' }}>
-              <div className="batch-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 28 }}>
-                <div>
-                  <div style={{ fontSize: 10, color: '#a8a29e', fontWeight: 800, letterSpacing: 2.5, marginBottom: 4 }}>BATCH ID · {batch.id}</div>
-                  <div style={{ fontSize: 20, fontWeight: 900, color: '#1c1917' }}>{batch.title || batch.label}</div>
-                  <div style={{ fontSize: 13, color: '#78716c', marginTop: 4 }}>
-                    موعد الذبح: {new Date(batch.slaughterDate).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
-                  </div>
-                  {batch.description && <div style={{ fontSize: 13, color: '#78716c', marginTop: 6, lineHeight: 1.7 }}>{batch.description}</div>}
-                </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 99, background: 'rgba(22,163,74,0.08)', border: '1.5px solid rgba(22,163,74,0.2)', color: '#16a34a', fontSize: 12, fontWeight: 800, flexShrink: 0 }}>
-                  <span className="pulse-anim" style={{ width: 8, height: 8, borderRadius: '50%', background: '#16a34a', display: 'inline-block' }} />
-                  الحجز مفتوح
-                </div>
-              </div>
-
-              {/* Progress */}
-              <div style={{ marginBottom: 24 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 12, color: '#78716c', fontWeight: 700 }}>الكمية المحجوزة</span>
-                  <span style={{ fontSize: 13, fontWeight: 900, color: 'var(--gold)' }}>{reservedPct}% امتلت</span>
-                </div>
-                <div className="progress-track"><div className="progress-fill" style={{ width: `${reservedPct}%` }} /></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-                  <span style={{ fontSize: 11, color: '#a8a29e' }}>محجوز: {reservedKg} كجم</span>
-                  <span style={{ fontSize: 11, color: '#a8a29e' }}>فاضل: {remainingKg} كجم بس</span>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="batch-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 28 }}>
-                {[
-                  { l: 'الكمية الكلية', v: `${totalKg} كجم`,    a: false },
-                  { l: 'فاضل للحجز',   v: `${remainingKg} كجم`, a: true  },
-                  { l: 'نسبة الامتلاء', v: `${reservedPct}%`,    a: false },
-                ].map(({ l, v, a }) => (
-                  <div key={l} style={{ background: a ? 'rgba(184,132,58,0.06)' : '#f5f4f0', borderRadius: 14, padding: '14px 16px', border: `1.5px solid ${a ? 'rgba(184,132,58,0.25)' : 'rgba(28,25,23,0.08)'}` }}>
-                    <div style={{ fontSize: 10, color: '#a8a29e', fontWeight: 700, marginBottom: 5 }}>{l}</div>
-                    <div style={{ fontSize: 20, fontWeight: 900, color: a ? 'var(--gold)' : '#1c1917' }}>{v}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Countdown */}
-              {batch.closingDate && (
-                <div style={{ textAlign: 'center', marginBottom: 26 }}>
-                  <div style={{ fontSize: 11, color: '#a8a29e', fontWeight: 700, letterSpacing: 2, marginBottom: 14 }}>الحجز بيقفل بعد</div>
-                  <div className="countdown-row" style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                    {[['يوم', countdown.d], ['ساعة', countdown.h], ['دقيقة', countdown.m], ['ثانية', countdown.s]].map(([label, val]) => (
-                      <div key={label} className="countdown-box">
-                        <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--gold)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{String(val).padStart(2, '0')}</div>
-                        <div style={{ fontSize: 10, color: '#a8a29e', marginTop: 5, fontWeight: 700 }}>{label}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div style={{ textAlign: 'center' }}>
-                <button className="btn-gold" style={{ height: 52, padding: '0 44px', fontSize: 15 }} onClick={() => scrollTo('products')}>
-                  اختار منتجك وابدأ الحجز <Icons.arrowLeft />
-                </button>
-              </div>
+          ) : batches.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+              {batches.map(batch => <BatchCard key={batch.id} batch={batch} onReserve={() => scrollTo('products')} onWaitlist={() => scrollTo('waitlist')} />)}
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '60px 24px' }}>
@@ -916,7 +951,7 @@ const waLink = waNumber ? `https://wa.me/${waNumber}` : null
     <ProductsCarousel
       products={products}
       normalizeProduct={normalizeProduct}
-      batch={batch}
+      batches={batches}
       onSelect={setSelectedProduct}
     />
   )}
