@@ -74,6 +74,7 @@ const NAV = [
       { path: '/dashboard/sales/new', label: 'فاتورة جديدة',   Icon: IcoNewSale,  permission: 'SALES_CREATE' },
       { path: '/dashboard/sales',     label: 'قائمة المبيعات', Icon: IcoSaleList, permission: 'SALES_READ'   },
       { path: '/dashboard/customers', label: 'العملاء',         Icon: IcoUsers,    permission: 'CUSTOMERS_VIEW' },
+      { path: '/dashboard/Waitlistpage', label: 'قائمة الانتزار',         Icon: IcoUsers,    permission: 'WAITLIST_READ' },
     ],
   },
   {
@@ -93,7 +94,7 @@ const NAV = [
     section: 'الإدارة',
     items: [
       { path: '/dashboard/users',            label: 'المستخدمون',    Icon: IcoUsers,  permission: 'USERS_VIEW' },
-      { path: '/dashboard/websitemanager', label: 'محتوي الموقع', Icon: IcoMoon, permission: null         },
+      { path: '/dashboard/websitemanager', label: 'محتوي الموقع', Icon: IcoMoon, permission: null     ,  permission: 'WEBSITE_VIEW'    },
       { path: '/dashboard/reports/activity', label: 'تقارير النشاط', Icon: IcoReport, permission: null         },
 
     ],
