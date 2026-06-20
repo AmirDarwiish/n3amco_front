@@ -770,7 +770,7 @@ const scrollTo = (id) => {
   /* ── Waitlist Submit ── */
   const handleWaitlist = async () => {
     if (!wlName.trim() || !wlPhone.trim()) { setWlError('الاسم والموبايل مطلوبين'); return }
-if (!wlKg) { setWlError('الكمية مطلوبة'); return }
+if (!wlKg || Number(wlKg) <= 0) { setWlError('الكمية مطلوبة'); return }
     setWlLoading(true); setWlError('')
     try {
 await submitWaitlist({ name: wlName, phone: wlPhone, requestedKg: Number(wlKg), notes: wlNotes })
@@ -856,7 +856,7 @@ const waLink = waNumber ? `https://wa.me/${waNumber}` : null
             ...(heroHasImage ? { background: 'rgba(184,132,58,0.15)', borderColor: 'rgba(184,132,58,0.5)', color: '#f0c97a' } : {}),
           }}>
             <span className="chip-dot pulse-anim" />
-            الحجز مفتوح  {batch?.title || ''}
+            الحجز مفتوح  {batches[0]?.title || ''}
           </div>
 
           <h1 className="hero-h1 fu d1" style={{ fontSize: 54, fontWeight: 900, lineHeight: 1.2, marginBottom: 20, color: heroHasImage ? '#fff' : '#1c1917' }}>
