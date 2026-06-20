@@ -20,10 +20,10 @@ async function fetchOpenBatch() {
     const res = await fetch(`${API_BASE_URL}/api/v1/public/batches/open`)
     if (!res.ok) return null
     const json = await res.json()
-    return json?.data ?? json ?? null
+    const data = json?.data ?? json ?? null
+    return Array.isArray(data) ? data[0] ?? null : data
   } catch { return null }
 }
-
 async function submitReservation(data) {
   const res = await fetch(`${API_BASE_URL}/api/v1/public/reservations`, {
     method: 'POST',
