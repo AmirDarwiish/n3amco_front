@@ -613,9 +613,9 @@ background: imageUrl
   )
 }
 function BatchCard({ batch, onReserve, onWaitlist }) {
-  const countdown   = useCountdown(batch.closingDate)
-  const reservedKg  = batch.reservedKg  || 0
-  const totalKg     = batch.totalKg     || 1
+  const countdown   = useCountdown(batch.slaughterDate || batch.SlaughterDate || null)
+  const reservedKg  = Number(batch.reservedKg  ?? batch.ReservedKg  ?? 0)
+  const totalKg     = Number(batch.totalKg     ?? batch.TotalKg     ?? 1) || 1
   const reservedPct = Math.min(100, Math.round((reservedKg / totalKg) * 100))
   const remainingKg = Math.max(0, totalKg - reservedKg)
   const isFull      = reservedPct >= 100
@@ -627,6 +627,11 @@ function BatchCard({ batch, onReserve, onWaitlist }) {
         <div>
           <div style={{ fontSize: 10, color: '#a8a29e', fontWeight: 800, letterSpacing: 2.5, marginBottom: 4 }}>BATCH ID · {batch.id}</div>
           <div style={{ fontSize: 20, fontWeight: 900, color: '#1c1917' }}>{batch.title || batch.label}</div>
+          {(batch.productName || batch.ProductName) && (
+            <div style={{ fontSize: 12, color: 'var(--gold)', fontWeight: 700, marginTop: 3 }}>
+              {batch.productName || batch.ProductName}
+            </div>
+          )}
           <div style={{ fontSize: 13, color: '#78716c', marginTop: 4 }}>
             موعد الذبح: {new Date(batch.slaughterDate).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
@@ -750,7 +755,7 @@ const [batches, setBatches] = useState([MOCK_BATCH])
         if (Array.isArray(homeData.banners)          && homeData.banners.length)          setBanners(homeData.banners)
         if (Array.isArray(homeData.featuredProducts) && homeData.featuredProducts.length) setProducts(homeData.featuredProducts)
         if ((!batchData || batchData.length === 0) && Array.isArray(homeData.activeBatches) && homeData.activeBatches.length) {
-          setBatches(homeData.activeBatches.filter(b => ['open','upcoming'].includes((b.status||'').toLowerCase())))
+          setBatches(homeData.activeBatches)
         }
       }
       if (batchData && batchData.length > 0) setBatches(batchData)
