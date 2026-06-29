@@ -1,224 +1,261 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="n3-loading">
   <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#0f0b08" />
 
-  <meta name="theme-color" content="#0f0b08" />
+    <title>نعامكو | لحوم نعام فاخرة</title>
+    <meta name="description" content="احجز لحوم النعام الطازجة قبل الذبح واستمتع بأعلى جودة وطزاجة مضمونة." />
+    <meta name="author" content="نعامكو" />
+    <meta name="robots" content="index, follow" />
 
-  <title>نعامكو | لحوم نعام فاخرة</title>
+    <!-- Preconnect to origins we'll need ASAP -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+    <link rel="preconnect" href="https://n3amco.runasp.net" />
 
-  <meta
-    name="description"
-    content="احجز لحوم النعام الطازجة قبل الذبح واستمتع بأعلى جودة وطزاجة مضمونة."
-  />
+    <!-- Favicon -->
+    <link rel="icon" href="https://res.cloudinary.com/dsh6m0lko/image/upload/f_auto,q_auto,w_32,h_32/v1781712970/ChatGPT_Image_Jun_17_2026_07_05_11_PM_veqnjp.png" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-  <meta name="author" content="نعامكو" />
-  <meta name="robots" content="index, follow" />
+    <!--
+      RENDER-BLOCKING FIX:
+      Load fonts with display=swap so text is visible immediately.
+      Use media="print" trick to load async, then swap to all.
+    -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800;900&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800;900&display=swap" />
+    </noscript>
 
-  <link rel="icon" href="https://res.cloudinary.com/dsh6m0lko/image/upload/v1781712970/ChatGPT_Image_Jun_17_2026_07_05_11_PM_veqnjp.png" />
-  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap"
-    rel="stylesheet"
-  />
-
-  <style>
-    :root {
-      --bg-main: #0f0b08;
-      --bg-soft: #18120d;
-      --gold: #c9a96e;
-      --gold-light: #e7c58a;
-      --text: #f5f1ea;
-      --muted: #8b7d6b;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-html,
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--bg-main);
-      font-family: "Cairo", sans-serif;
-    }
-
-    html.n3-loading,
-    body.n3-loading {
-      overflow: hidden;
-    }
-
-    body {
-      background:
-        radial-gradient(circle at top, rgba(201, 169, 110, 0.08), transparent 40%),
-        linear-gradient(180deg, #0f0b08 0%, #15100b 100%);
-    }
-
-    .n3amco-loader {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      overflow: hidden;
-    }
-
-    .glow {
-      position: absolute;
-      width: 500px;
-      height: 500px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(201,169,110,0.12), transparent 70%);
-      filter: blur(40px);
-      animation: pulseGlow 4s ease-in-out infinite;
-    }
-
-    .logo-circle {
-      width: 88px;
-      height: 88px;
-      border-radius: 50%;
-      border: 1.5px solid rgba(201,169,110,0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      margin-bottom: 28px;
-      backdrop-filter: blur(10px);
-      background: rgba(255,255,255,0.02);
-      box-shadow: 0 0 40px rgba(201,169,110,0.08);
-    }
-
-    .spinner {
-      position: absolute;
-      width: 88px;
-      height: 88px;
-      border-radius: 50%;
-      border: 2px solid transparent;
-      border-top-color: var(--gold);
-      animation: spin 1s linear infinite;
-    }
-
-    .logo-text {
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: 5px;
-      color: var(--gold);
-      z-index: 2;
-    }
-
-    .brand-title {
-      color: var(--text);
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: 3px;
-      margin-bottom: 10px;
-      opacity: 0;
-      animation: fadeUp 1s ease forwards 0.3s;
-    }
-
-    .brand-subtitle {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      opacity: 0;
-      animation: fadeUp 1s ease forwards 0.5s;
-    }
-
-    .loading-bar {
-      width: 180px;
-      height: 4px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.05);
-      overflow: hidden;
-      margin-top: 28px;
-      position: relative;
-    }
-
-    .loading-bar::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      width: 40%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        var(--gold),
-        transparent
-      );
-      animation: loadingMove 1.4s infinite ease-in-out;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
+    <style>
+      /* ── Critical inline CSS so first paint needs zero extra requests ── */
+      :root {
+        --bg-main: #0f0b08;
+        --bg-soft: #18120d;
+        --gold: #c9a96e;
+        --gold-light: #e7c58a;
+        --text: #f5f1ea;
+        --muted: #8b7d6b;
       }
-    }
 
-    @keyframes pulseGlow {
-      0%,100% {
-        transform: scale(1);
-        opacity: 0.7;
-      }
-      50% {
-        transform: scale(1.08);
-        opacity: 1;
-      }
-    }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    @keyframes fadeUp {
-      from {
+      html, body {
+        width: 100%;
+        height: 100%;
+        /* Cairo system fallback while font loads — prevents CLS */
+        font-family: "Cairo", "Segoe UI", Tahoma, Arial, sans-serif;
+        background: var(--bg-main);
+      }
+
+      html.n3-loading,
+      body.n3-loading { overflow: hidden; }
+
+      body {
+        background:
+          radial-gradient(circle at top, rgba(201,169,110,0.08), transparent 40%),
+          linear-gradient(180deg, #0f0b08 0%, #15100b 100%);
+      }
+
+      /* ── LOADER ── */
+      .n3amco-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        overflow: hidden;
+        /* Fade out when React mounts */
+        transition: opacity 0.4s ease, visibility 0.4s ease;
+      }
+
+      .n3amco-loader.hidden {
         opacity: 0;
-        transform: translateY(12px);
+        visibility: hidden;
+        pointer-events: none;
       }
-      to {
-        opacity: 1;
-        transform: translateY(0);
+
+      .glow {
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(201,169,110,0.12), transparent 70%);
+        filter: blur(40px);
+        animation: pulseGlow 4s ease-in-out infinite;
+        /* GPU layer — avoid layout thrash */
+        will-change: transform, opacity;
       }
-    }
 
-    @keyframes loadingMove {
-      0% {
-        transform: translateX(-120%);
+      .logo-circle {
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(201,169,110,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin-bottom: 28px;
+        backdrop-filter: blur(10px);
+        background: rgba(255,255,255,0.02);
+        box-shadow: 0 0 40px rgba(201,169,110,0.08);
+        /* explicit size = no CLS */
+        flex-shrink: 0;
       }
-      100% {
-        transform: translateX(320%);
+
+      .spinner {
+        position: absolute;
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        border-top-color: var(--gold);
+        animation: spin 1s linear infinite;
+        /* GPU composite — avoid forced reflow */
+        will-change: transform;
       }
-    }
-  </style>
-</head>
 
-<body>
-  <noscript>يجب تفعيل JavaScript لتشغيل موقع نعامكو.</noscript>
+      .logo-text {
+        font-size: 28px;
+        font-weight: 900;
+        letter-spacing: 5px;
+        color: var(--gold);
+        z-index: 2;
+        /* explicit width/height prevents layout shift */
+        display: block;
+        width: 28px;
+        text-align: center;
+      }
 
-  <div id="root">
-    <div class="n3amco-loader">
-      <div class="glow"></div>
+      .brand-title {
+        color: var(--text);
+        font-size: 20px;
+        font-weight: 900;
+        letter-spacing: 3px;
+        margin-bottom: 10px;
+        opacity: 0;
+        animation: fadeUp 1s ease forwards 0.3s;
+        will-change: transform, opacity;
+      }
 
-      <div class="logo-circle">
-        <div class="spinner"></div>
-        <div class="logo-text">N</div>
+      .brand-subtitle {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        opacity: 0;
+        animation: fadeUp 1s ease forwards 0.5s;
+        will-change: transform, opacity;
+      }
+
+      .loading-bar {
+        width: 180px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.05);
+        overflow: hidden;
+        margin-top: 28px;
+        position: relative;
+      }
+
+      .loading-bar::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        width: 40%;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        animation: loadingMove 1.4s infinite ease-in-out;
+        will-change: transform;
+      }
+
+      /* ── Keyframes ── */
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      @keyframes pulseGlow {
+        0%, 100% { transform: scale(1);    opacity: 0.7; }
+        50%       { transform: scale(1.08); opacity: 1;   }
+      }
+
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0);    }
+      }
+
+      @keyframes loadingMove {
+        0%   { transform: translateX(-120%); }
+        100% { transform: translateX(320%);  }
+      }
+
+      /* ── Respect reduced-motion ── */
+      @media (prefers-reduced-motion: reduce) {
+        .spinner, .glow, .brand-title, .brand-subtitle,
+        .loading-bar::after {
+          animation: none !important;
+        }
+        .brand-title, .brand-subtitle { opacity: 1; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>يجب تفعيل JavaScript لتشغيل موقع نعامكو.</noscript>
+
+    <div id="root">
+      <div class="n3amco-loader" id="n3-loader" aria-hidden="true">
+        <div class="glow"></div>
+
+        <div class="logo-circle">
+          <div class="spinner"></div>
+          <span class="logo-text" aria-hidden="true">N</span>
+        </div>
+
+        <div class="brand-title">نعامكو</div>
+        <div class="brand-subtitle">PREMIUM OSTRICH MEAT EXPERIENCE</div>
+        <div class="loading-bar" role="progressbar" aria-label="جاري التحميل"></div>
       </div>
-
-      <div class="brand-title">نعامكو</div>
-
-      <div class="brand-subtitle">
-        PREMIUM OSTRICH MEAT EXPERIENCE
-      </div>
-
-      <div class="loading-bar"></div>
     </div>
-  </div>
-</body>
+
+    <!--
+      Hide loader once React hydrates.
+      We use a MutationObserver instead of DOMContentLoaded
+      so the loader disappears exactly when React renders its first child.
+    -->
+    <script>
+      (function () {
+        var root = document.getElementById('root');
+        var loader = document.getElementById('n3-loader');
+        if (!root || !loader) return;
+
+        var obs = new MutationObserver(function () {
+          // React mounts a div/section as first real child — loader is aria-hidden
+          var hasContent = root.children.length > 1 ||
+            (root.firstElementChild && !root.firstElementChild.classList.contains('n3amco-loader'));
+          if (hasContent) {
+            loader.classList.add('hidden');
+            document.documentElement.classList.remove('n3-loading');
+            document.body.classList.remove('n3-loading');
+            obs.disconnect();
+            // Remove from DOM after transition
+            setTimeout(function () { loader.remove(); }, 500);
+          }
+        });
+
+        obs.observe(root, { childList: true, subtree: false });
+      })();
+    </script>
+  </body>
 </html>
